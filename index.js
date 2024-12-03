@@ -34,7 +34,14 @@ const userCollection=client.db('CoffeesDB').collection('users')
 
 //display show all coffees json data (step2) 
 app.get('/coffees',async(req,res)=>{
-    const cursor=CoffeesCollection.find();
+
+  const {searchParams}=req.query;
+  let option={}
+  if(searchParams){
+
+    option={name:{$regex:searchParams,$options:'i'}}
+  }
+    const cursor=CoffeesCollection.find(option);
     const result=await cursor.toArray()
     res.send(result)
 })
@@ -95,10 +102,19 @@ app.post('/users',async(req,res)=>{
 })
 
 app.get('/users',async(req,res)=>{
+
+
 const cursor=userCollection.find();
 const result=await cursor.toArray()
 res.send(result)
 
+})
+
+app.get('/users/:id',async(req,res)=>{
+  const id=req.params.id;
+const filter={_id: new ObjectId(id)};
+const result=await userCollection.findOne(filter);
+res.send(result)
 })
 
 app.patch('/users/:email',async(req,res)=>{
@@ -112,6 +128,17 @@ app.patch('/users/:email',async(req,res)=>{
   const result=await userCollection.updateOne(query,userLastSignInTime)
   res.send(result)
 })
+
+
+
+app.delete('/users/:id',async(req,res)=>{
+const id=req.params.id;
+const query={_id: new ObjectId(id)}
+const result=await userCollection.deleteOne(query);
+res.send(result)
+})
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
